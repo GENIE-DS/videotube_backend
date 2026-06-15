@@ -1,0 +1,51 @@
+$kind: http-request
+name: user/register
+url: "{{server}}/users/register?fullname=kick&email=kick@kick.com&password=123456&username=kick&avatar="
+method: POST
+queryParams:
+  - key: fullname
+    value: kick
+  - key: email
+    value: kick@kick.com
+  - key: password
+    value: "123456"
+  - key: username
+    value: kick
+  - key: avatar
+    value: ""
+body:
+  type: formdata
+  content:
+    - type: text
+      key: fullname
+      value: kick
+      description: ""
+      disabled: false
+    - type: text
+      key: email
+      value: kick@kick.com
+      description: ""
+      disabled: false
+    - type: text
+      key: password
+      value: "123456"
+      description: ""
+      disabled: false
+    - type: file
+      key: avatar
+      src:
+        - /Users/matrix/Downloads/683976.jpg
+      description: ""
+      disabled: false
+    - type: text
+      key: username
+      value: kick
+      description: ""
+      disabled: false
+    - type: file
+      key: coverImage
+      src:
+        - /Users/matrix/Downloads/6333229.jpg
+      description: ""
+      disabled: false
+order: 1781528118661

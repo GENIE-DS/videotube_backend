@@ -9,3 +9,17 @@ class ApiResponse {
 
 
 export  { ApiResponse }
+
+
+
+
+/*
+
+API Responses 
+1XX - Informational
+2XX - Success
+3XX - Redirection
+4XX - Client Error
+5XX - Server Error
+
+*/
