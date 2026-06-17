@@ -4,6 +4,26 @@ import { User } from "../models/user.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 
+const generateAccessAndRefreshToken = async (userId)=>{
+    try {
+        const user =  await User.findById(userId)
+        const accessToken = user.generateAccessToken()
+        const refreshToken = user.generateRefreshToken()
+
+        user.refreshToken = refreshToken
+        await user.save({ validateBeforeSave: false })
+
+        return {accessToken, refreshToken}
+
+    } catch (error) {
+        throw new ApiError(500, "Something went wrong while generating access and refresh token")
+    }
+}
+
+
+
+
+
 const registerUser = asyncHandler( async (req , res) => {
     
     /*
@@ -86,6 +106,79 @@ const registerUser = asyncHandler( async (req , res) => {
 
 })
 
+const loginUser = asyncHandler( async (req , res) => {
+    /* 
+        workflow for login user
+        1, get username/email and password from the req.body
+        2, validate non empty
+        3, check if user exists with the given email/username
+        4, if exists, comapre with the hased password in database
+        5, correct password -> generaate access token and refresh token 
+        // 6, save refresh token in database for the user
+        // 7, return response with  cookies including access token and refresh token and user details (except password and refresh token)
+    */
+
+        const {  email , username , password } = req.body
+
+        if ( !username || !email) {
+            throw new ApiError(400, "Username and Email is required") // even for login we are asking them for both username and email, but we can also ask for either of them, but for now we are asking for both.
+        }
+
+        const user = await User.findOne({
+            $or : [{username}, {email}] 
+        })
+
+        if(!user){
+            throw new ApiError(404, "User not found with the given email or username")
+        }
+
+        const isPasswordValid = await user.isPasswordCorrect(password)
+
+        if(!isPasswordValid){
+            throw new ApiError(401, "Invalid user credentials")
+        }
+
+        const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id)
+
+        const loggedInUser = await User.findById(user._id).select("-password -refreshToken"    )
+        // if database calls feels heavy above we may update our current object as well.
 
 
-export {registerUser};
+        const options = {
+            httpOnly : true,
+            secure : true,
+        }
+
+        return res
+        .status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(
+            new ApiResponse(200, {
+                loggedInUser, accessToken, refreshToken
+            }, "User logged in successfully")
+        )
+
+})
+
+const logoutUser = asyncHandler( async (req , res) => {
+    /* 
+    workflow for logout user
+    1, get user id
+    2, find the user in database
+    3, if user exists, remove the refresh/access token from the database
+    4, clear the cookies in response
+    5, return response.
+    */
+
+    
+
+
+})
+
+export {
+    registerUser,
+    loginUser, 
+    logoutUser,
+};
+// export {loginUser};
