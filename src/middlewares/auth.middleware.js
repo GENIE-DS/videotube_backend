@@ -1,0 +1,29 @@
+import {asynchandler} from "express-async-handler";
+import {ApiError} from "../utils/apiError.js";
+import jwt from "jsonwebtoken";
+import {User} from "../models/user.model.js";
+
+
+export const verifyJWT = asynchandler( async (req , res , next)=> {
+try {
+        req.cookies?.accessToken || req.header ("Authorization")?.replace("Bearer ", "")
+
+        if(!token){
+            throw new ApiError(401, "Unauthorized access, token is missing")
+        }
+
+        const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET )
+
+        const user = await User.findById(decodedToken?._id).select("-password -refreshToken")
+
+        if(!user){
+            throw new ApiError(401, "Unauthorized access, Access Token is invalid")
+        }
+
+        req.user = user;
+        next();
+} catch (error) {
+    throw new ApiError(401, error?.message || "Invalid Access Token")
+}
+
+})
