@@ -2,11 +2,11 @@ import {asynchandler} from "express-async-handler";
 import {ApiError} from "../utils/apiError.js";
 import jwt from "jsonwebtoken";
 import {User} from "../models/user.model.js";
+ 
 
-
-export const verifyJWT = asynchandler( async (req , res , next)=> {
+export const verifyJWT = asynchandler( async (req , _ , next)=> {
 try {
-        req.cookies?.accessToken || req.header ("Authorization")?.replace("Bearer ", "")
+        const token = req.cookies?.accessToken || req.header ("Authorization")?.replace("Bearer ", "")
 
         if(!token){
             throw new ApiError(401, "Unauthorized access, token is missing")

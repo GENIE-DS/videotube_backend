@@ -162,16 +162,40 @@ const loginUser = asyncHandler( async (req , res) => {
 })
 
 const logoutUser = asyncHandler( async (req , res) => {
-    /* 
-    workflow for logout user
-    1, get user id
-    2, find the user in database
-    3, if user exists, remove the refresh/access token from the database
-    4, clear the cookies in response
-    5, return response.
-    */
+            /* 
+            workflow for logout user
+            1, get user id
+            2, find the user in database
+            3, if user exists, remove the refresh/access token from the database
+            4, clear the cookies in response
+            5, return response.
+            */
 
-    
+            // verifyJWT  added req.user to req so access here
+
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set: {
+                refreshToken: undefined
+            }
+        },
+        {
+            new : true,
+        }
+    ) 
+
+    const options = {
+        httpOnly : true,
+        secure : true,
+    }
+
+    return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(new ApiResponse(200, {}, "User logged out successfully"))
+
 
 
 })
