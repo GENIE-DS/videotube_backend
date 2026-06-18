@@ -10,9 +10,10 @@ const generateAccessAndRefreshToken = async (userId)=>{
         const accessToken = user.generateAccessToken()
         const refreshToken = user.generateRefreshToken()
 
-        user.refreshToken = refreshToken
+        user.refreshToken = refreshToken;
+        // user.accessToken = accessToken; //you shouldn't save accesstoken in DB , its short lived anyways
         await user.save({ validateBeforeSave: false })
-
+        // console.log(user);
         return {accessToken, refreshToken}
 
     } catch (error) {
@@ -120,8 +121,10 @@ const loginUser = asyncHandler( async (req , res) => {
 
         const {  email , username , password } = req.body
 
-        if ( !username || !email) {
-            throw new ApiError(400, "Username and Email is required") // even for login we are asking them for both username and email, but we can also ask for either of them, but for now we are asking for both.
+        if ( !username && !email) {
+            throw new ApiError(400, "Username or Email is required to Login") 
+            // even for login we are asking them for both username and email, but we can also ask for either of them, but for now we are asking for both.
+            // well lateron i decided that lets make only one thing as required.
         }
 
         const user = await User.findOne({
@@ -137,7 +140,7 @@ const loginUser = asyncHandler( async (req , res) => {
         if(!isPasswordValid){
             throw new ApiError(401, "Invalid user credentials")
         }
-
+        
         const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id)
 
         const loggedInUser = await User.findById(user._id).select("-password -refreshToken"    )
@@ -148,6 +151,9 @@ const loginUser = asyncHandler( async (req , res) => {
             httpOnly : true,
             secure : true,
         }
+        // console.log("refreshToken :",refreshToken);
+        // console.log("accessToken :",accessToken);
+        // console.log("login user is working");
 
         return res
         .status(200)
@@ -159,6 +165,8 @@ const loginUser = asyncHandler( async (req , res) => {
             }, "User logged in successfully")
         )
 
+        
+        
 })
 
 const logoutUser = asyncHandler( async (req , res) => {

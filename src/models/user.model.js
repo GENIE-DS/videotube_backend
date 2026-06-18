@@ -56,7 +56,8 @@ userSchema.methods.isPasswordCorrect = async function (password) {
 }
 
 userSchema.methods.generateAccessToken = function(){
-    return jwt.sign(
+    // const accessToken =
+    return  jwt.sign(
         {
             _id: this._id,
             email: this.email,
@@ -68,6 +69,9 @@ userSchema.methods.generateAccessToken = function(){
             expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
         }
     )
+    // if(!accessToken) console.log("something went wrong generating accessToken");
+    
+    // return accessToken;
 }
 userSchema.methods.generateRefreshToken = function(){
     return jwt.sign(
@@ -80,7 +84,8 @@ userSchema.methods.generateRefreshToken = function(){
         }
     )
 }
-userSchema.methods.generateRefreshToken = function(){}
+// userSchema.methods.generateRefreshToken = function(){}
+// lol this line above caused me serious headache. was uncommented before.
 
 
 export const User = new mongoose.model("User" , userSchema )

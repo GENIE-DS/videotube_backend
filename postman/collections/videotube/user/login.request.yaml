@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{server}}/users/login"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "username" : "kick",
+        "email" : "kick@kick.com",
+        "password" : "123456"
+    }
+order: 3707003279741876
