@@ -255,6 +255,34 @@ const refreshAccessToken = asyncHandler( async (req , res) => {
 
 })
 
+const changeCurrentPassword = asyncHandler( async (req , res) => {
+    /* workflow for changing password;
+    0, user is logged in is already verified at router middleware
+    1, user submits current and new password (non emptyness and new password double verified and validated at frontend itself)
+    // though i wonder if a power user can bypass frontend logic and directly send a payload which is unvalidated, so we must check
+    2, we need to verify current password by (just use comapre fn,) encrypting with bcrypt and matching with stored one.
+    3, if true, store the encrypted form of new password. return 200 OK.
+    */
+    const {oldPassword, newPassword} = req.body
+
+    const user = await User.findById(req.user?._id)
+    const isPasswordCorrect =  user.isPasswordCorrect(oldPassword)
+
+    if(! isPasswordCorrect){
+        throw new ApiError(400, "Invalid old password provided")
+    }
+
+    user.password = newPassword;
+    await user.save({validateBeforeSave : false,})
+    // as we will save , the pre-hook in save() method of User model, auto encripts and saves the encripted password 
+
+    return res
+    .status(200)
+    .json(new ApiResponse (200, {}, "Password changed successfully!!" ))
+
+})
+
+
 export {
     registerUser,
     loginUser, 
